@@ -3683,6 +3683,7 @@ int btrfs_update_block_group(struct btrfs_trans_handle *trans,
 		cache->reclaim_mark = 0;
 		space_info->bytes_reserved -= num_bytes;
 		space_info->bytes_used += num_bytes;
+		available_counter_increment(space_info, num_bytes);
 		space_info->disk_used += num_bytes * factor;
 		if (READ_ONCE(space_info->periodic_reclaim))
 			btrfs_space_info_update_reclaimable(space_info, -num_bytes);
