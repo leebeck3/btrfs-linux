@@ -2605,9 +2605,12 @@ static int pin_down_extent(struct btrfs_trans_handle *trans,
 	spin_lock(&cache->lock);
 	cache->pinned += num_bytes;
 	btrfs_space_info_update_bytes_pinned(cache->space_info, num_bytes);
+	//rework
+	available_counter_increment(cache->space_info, num_bytes);
 	if (reserved) {
 		cache->reserved -= num_bytes;
 		cache->space_info->bytes_reserved -= num_bytes;
+		available_counter_increment(cache->space_info, -num_bytes);
 	}
 	spin_unlock(&cache->lock);
 	spin_unlock(&cache->space_info->lock);
@@ -2802,19 +2805,25 @@ static int unpin_extent_range(struct btrfs_fs_info *fs_info,
 			spin_unlock(&cluster->lock);
 		}
 
+
+		//rework
 		spin_lock(&space_info->lock);
 		spin_lock(&cache->lock);
 		cache->pinned -= len;
 		btrfs_space_info_update_bytes_pinned(space_info, -len);
+		available_counter_increment(space_info, -len);
 		space_info->max_extent_size = 0;
 		if (cache->ro) {
 			space_info->bytes_readonly += len;
+			available_counter_increment(space_info, len);
 			readonly = true;
 		} else if (btrfs_is_zoned(fs_info)) {
 			/* Need reset before reusing in a zoned block group */
 			btrfs_space_info_update_bytes_zone_unusable(space_info, len);
+			available_counter_increment(space_info, len);
 			readonly = true;
 		}
+		//available_counter_increment(space_info, -len);
 		spin_unlock(&cache->lock);
 		if (!readonly && return_free_space)
 			btrfs_return_free_space(space_info, len);
