@@ -176,6 +176,15 @@ u64 __pure btrfs_space_info_used(const struct btrfs_space_info *s_info,
 			  bool may_use_included)
 {
 	ASSERT(s_info);
+	u64 total = s_info->bytes_used + s_info->bytes_reserved +
+		s_info->bytes_pinned + s_info->bytes_readonly +
+		s_info->bytes_zone_unusable +
+		(may_use_included ? s_info->bytes_may_use : 0);
+	u64 percpu_sum = percpu_counter_sum(&s_info->available_space) + (may_use_included ? percpu_counter_sum(&s_info->bytes_may_use_percpu) : 0);
+	if (percpu_sum != total) {
+		printk(KERN_DEBUG "btrfs: space_info: available_space percpu_sum: %llu isn't equal to regular: %llu", percpu_sum, total);
+		dump_stack();
+		}
 	return s_info->bytes_used + s_info->bytes_reserved +
 		s_info->bytes_pinned + s_info->bytes_readonly +
 		s_info->bytes_zone_unusable +
@@ -320,12 +329,16 @@ void btrfs_add_bg_to_space_info(struct btrfs_fs_info *info,
 	found = btrfs_find_space_info(info, block_group->flags);
 	ASSERT(found);
 	spin_lock(&found->lock);
+	//rework
 	found->total_bytes += block_group->length;
 	found->disk_total += block_group->length * factor;
 	found->bytes_used += block_group->used;
+	available_counter_increment(found, block_group->used);
 	found->disk_used += block_group->used * factor;
 	found->bytes_readonly += block_group->bytes_super;
+	available_counter_increment(found, block_group->bytes_super);
 	btrfs_space_info_update_bytes_zone_unusable(found, block_group->zone_unusable);
+	available_counter_increment(found, block_group->zone_unusable);
 	if (block_group->length > 0)
 		found->full = 0;
 	btrfs_try_granting_tickets(info, found);
