@@ -1304,10 +1304,12 @@ void btrfs_destroy_delayed_refs(struct btrfs_transaction *trans)
 				spin_lock(&bg->space_info->lock);
 				spin_lock(&bg->lock);
 				bg->pinned += head->num_bytes;
+				//rework
 				btrfs_space_info_update_bytes_pinned(bg->space_info,
 								     head->num_bytes);
 				bg->reserved -= head->num_bytes;
 				bg->space_info->bytes_reserved -= head->num_bytes;
+				//available_counter_increment(bg->space_info, -head->num_bytes);
 				spin_unlock(&bg->lock);
 				spin_unlock(&bg->space_info->lock);
 
