@@ -99,12 +99,20 @@ enum btrfs_flush_state {
 	RESET_ZONES		= 12,
 };
 
+//struct btrfs_space_info_2 {
+//	struct btrfs_fs_info *fs_info;
+//	struct percpu_counter total_bytes;
+//	struct percpu_counter free_bytes;
+//	struct percpu_counter available_bytes; /*I'm thinking this should be total - bytes_may_use*/
+//};
+
 struct btrfs_space_info {
 	struct btrfs_fs_info *fs_info;
 	spinlock_t lock;
 
 	u64 total_bytes;	/* total bytes in the space,
 				   this doesn't take mirrors into account */
+	struct percpu_counter available_space;
 	u64 bytes_used;		/* total bytes used,
 				   this doesn't take mirrors into account */
 	u64 bytes_pinned;	/* total bytes pinned, will be freed when the
@@ -243,6 +251,23 @@ static inline void bmu_counter_increment(struct btrfs_space_info *sinfo, s64 byt
 		       "btrfs: bytes_may_use counter not equal percpu_counter_sum: %llu regular_sum: %llu",
 		       percpu_sum, sinfo->bytes_may_use);
 	}
+}
+
+
+static inline void available_counter_increment(struct btrfs_space_info *sinfo, s64 bytes)
+{
+	if (percpu_counter_initialized(&sinfo->available_space))
+		percpu_counter_init(&sinfo->available_space, 0, GFP_KERNEL);
+	percpu_counter_add(&sinfo->available_space, bytes);
+	//printk(KERN_DEBUG "btrfs: added %lld to available_space counter", bytes);
+	//dump_stack();
+//	u64 total = sinfo->bytes_used + sinfo->bytes_reserved + sinfo->bytes_pinned
+//		+ sinfo->bytes_readonly + sinfo->bytes_zone_unusable + sinfo->bytes_may_use;
+//	u64 percpu_total = percpu_counter_sum(&sinfo->available_space);
+//	if (total != percpu_total || total != (percpu_total - sinfo->bytes_may_use)) {
+//		printk(KERN_DEBUG "btrfs: available_space %llu isn't equal to %llu", percpu_total, total);
+//		dump_stack();
+//	}
 }
 
 /*
