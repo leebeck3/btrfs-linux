@@ -3696,6 +3696,7 @@ static int do_trimming(struct btrfs_block_group *block_group,
 	list_del(&trim_entry->list);
 	mutex_unlock(&ctl->cache_writeout_mutex);
 
+	//rework
 	if (update) {
 		spin_lock(&space_info->lock);
 		spin_lock(&block_group->lock);
