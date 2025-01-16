@@ -2575,6 +2575,7 @@ static void unaccount_log_buffer(struct btrfs_fs_info *fs_info, u64 start)
 	spin_lock(&cache->lock);
 	cache->reserved -= fs_info->nodesize;
 	cache->space_info->bytes_reserved -= fs_info->nodesize;
+	available_counter_increment(cache->space_info, -fs_info->nodesize);
 	spin_unlock(&cache->lock);
 	spin_unlock(&cache->space_info->lock);
 
