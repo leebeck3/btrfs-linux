@@ -244,6 +244,7 @@ static void btrfs_calculate_inode_block_rsv_size(struct btrfs_fs_info *fs_info,
 	u64 reserve_size = 0;
 	u64 qgroup_rsv_size = 0;
 	unsigned outstanding_extents;
+	struct btrfs_space_info *space_info = fs_info->data_sinfo;
 
 	lockdep_assert_held(&inode->lock);
 	outstanding_extents = inode->outstanding_extents;
@@ -271,8 +272,20 @@ static void btrfs_calculate_inode_block_rsv_size(struct btrfs_fs_info *fs_info,
 	 */
 	qgroup_rsv_size = (u64)outstanding_extents * fs_info->nodesize;
 
+	if(block_rsv->size > block_rsv->reserved) {
+		spin_lock(&fs_info->data_sinfo->lock);
+		btrfs_space_info_update_bytes_may_use(space_info, -reserve_size);
+		spin_unlock(&fs_info->data_sinfo->lock);
+	}
+	if(block_rsv->size < block_rsv->reserved) {
+		spin_lock(&fs_info->data_sinfo->lock);
+		btrfs_space_info_update_bytes_may_use(space_info, reserve_size);
+		spin_unlock(&fs_info->data_sinfo->lock);
+	}
+
 	spin_lock(&block_rsv->lock);
 	block_rsv->size = reserve_size;
+	printk(KERN_DEBUG "btrfs: block_rsv->size is %llu, block_rsv->reserved is %llu", block_rsv->size, block_rsv->reserved);
 	block_rsv->qgroup_rsv_size = qgroup_rsv_size;
 	spin_unlock(&block_rsv->lock);
 }
