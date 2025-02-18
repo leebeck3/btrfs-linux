@@ -185,10 +185,7 @@ u64 __pure btrfs_space_info_used(const struct btrfs_space_info *s_info,
 		printk(KERN_DEBUG "btrfs: space_info: available_space percpu_sum: %llu isn't equal to regular: %llu", percpu_sum, total);
 		dump_stack();
 		}
-	return s_info->bytes_used + s_info->bytes_reserved +
-		s_info->bytes_pinned + s_info->bytes_readonly +
-		s_info->bytes_zone_unusable +
-		(may_use_included ? s_info->bytes_may_use : 0);
+	return total
 }
 
 /*
