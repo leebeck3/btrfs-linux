@@ -101,8 +101,8 @@ jobs:
         --disk $DISKS \
         --user root --network user -- \
         "cd $HOME/xfstests; lscpu; free -m; cat /proc/partitions; cat local.config; \
-         . local.config \
-         df -h \
+         . local.config; \
+         df -h; \
          mkfs.btrfs $MKFS_OPTIONS $TEST_DEV; \
          env --default-signal=PIPE ./check -R xunit -b -T ${{ matrix.group }}; \
          echo FSTESTS FINISHED"
