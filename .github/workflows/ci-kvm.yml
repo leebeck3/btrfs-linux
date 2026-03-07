@@ -69,7 +69,9 @@ jobs:
     # Tests
     - name: Setup fstests environment
       run: |
-        truncate -s 12g disk{1..9}
+        for i in {1..9}; do
+          qemu-img create -f raw disk$i 12G
+        done
         pushd $HOME/xfstests
         sudo useradd --create-home fsgqa
         sudo useradd fsgqa2
