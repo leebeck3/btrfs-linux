@@ -6,9 +6,7 @@ name: CI KVM
 
 on:
   push:
-    branches: [ "ci-kvm**" ]
-  pull_request:
-    branches: [ "ci-kvm**" ]
+    branches: [ "ci-*" ]
 
 jobs:
   build:
