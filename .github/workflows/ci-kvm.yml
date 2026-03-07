@@ -69,8 +69,11 @@ jobs:
     # Tests
     - name: Setup fstests environment
       run: |
-        for i in {1..9}; do
+        DISKNUM=9
+        DISKS=""
+        for i in {1..$(DISKNUM)}; do
           qemu-img create -f raw disk$i 12G
+          DISKS+= " --disk disk$i"
         done
         pushd $HOME/xfstests
         sudo useradd --create-home fsgqa
@@ -95,8 +98,7 @@ jobs:
     - name: "Start fstests in VM: ${{ matrix.group }}"
       run: |
         sudo vng --memory 4096 --rw \
-        --disk disk1 --disk disk2 --disk disk3 --disk disk4 --disk disk5 \
-        --disk disk6 --disk disk7 --disk disk8 --disk disk9 \
+        --disk $DISKS \
         --user root --network user -- \
         "cd $HOME/xfstests; lscpu; free -m; cat /proc/partitions; cat local.config; \
          . local.config \
