@@ -69,9 +69,9 @@ jobs:
       run: |
         DISKNUM=9
         DISKS=""
-        for i in {1..$(DISKNUM)}; do
+        for ((i=1;i<=DISKNUM;i++)); do
           qemu-img create -f raw disk$i 12G
-          DISKS+= " --disk disk$i"
+          DISKS+=" --disk disk$i"
         done
         pushd $HOME/xfstests
         sudo useradd --create-home fsgqa
@@ -95,12 +95,13 @@ jobs:
     # - cpus all from host (usually 4)
     - name: "Start fstests in VM: ${{ matrix.group }}"
       run: |
-        sudo vng --memory 4096 --rw \
-        --disk $DISKS \
+        ls -latr
+        sudo --preserve-env=DISKS vng --memory 4096 --rw \
+        $DISKS \
         --user root --network user -- \
         "cd $HOME/xfstests; lscpu; free -m; cat /proc/partitions; cat local.config; \
          . local.config; \
-         df -h; \
+         echo "TEST: " $TEST_DEV; \
          mkfs.btrfs $MKFS_OPTIONS $TEST_DEV; \
          env --default-signal=PIPE ./check -R xunit -b -T ${{ matrix.group }}; \
          echo FSTESTS FINISHED"
