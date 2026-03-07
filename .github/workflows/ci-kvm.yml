@@ -97,7 +97,7 @@ jobs:
         --disk disk6 --disk disk7 --disk disk8 --disk disk9 \
         --user root --network user -- \
         "cd $HOME/xfstests; lscpu; free -m; cat /proc/partitions; cat local.config; \
-         $TEST_DEV \
+         . local.config \
          mkfs.btrfs $MKFS_OPTIONS $TEST_DEV; \
          env --default-signal=PIPE ./check -R xunit -b -T ${{ matrix.group }}; \
          echo FSTESTS FINISHED"
