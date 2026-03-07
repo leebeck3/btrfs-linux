@@ -78,11 +78,11 @@ jobs:
         sudo mkdir /mnt/scratch
         echo export TEST_DEV=/dev/vda >> local.config
         echo export TEST_DIR=/mnt/test >> local.config
-        echo export SCRATCH_DEV_POOL="'/dev/vdb /dev/vdc /dev/vdd /dev/vde /dev/vdf /dev/vdg /dev/vdh /dev/vdi'" >> local.config
+        echo export SCRATCH_DEV_POOL="/dev/vdb /dev/vdc /dev/vdd /dev/vde /dev/vdf /dev/vdg /dev/vdh /dev/vdi" >> local.config
         echo export LOGWRITES_DEV=/dev/vdi >> local.config
         echo export SCRATCH_MNT=/mnt/scratch >> local.config
         echo export FSTYP=btrfs >> local.config
-        echo export MKFS_OPTIONS="'-K -f'" >> local.config
+        echo export MKFS_OPTIONS="-K -f" >> local.config
         echo export MOUNT_OPTIONS= >> local.config
         popd
     # With --rw we have full access to the host
@@ -98,6 +98,7 @@ jobs:
         --user root --network user -- \
         "cd $HOME/xfstests; lscpu; free -m; cat /proc/partitions; cat local.config; \
          . local.config \
+         df -h \
          mkfs.btrfs $MKFS_OPTIONS $TEST_DEV; \
          env --default-signal=PIPE ./check -R xunit -b -T ${{ matrix.group }}; \
          echo FSTESTS FINISHED"
