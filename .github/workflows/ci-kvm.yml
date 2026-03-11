@@ -95,6 +95,7 @@ jobs:
     # - cpus all from host (usually 4)
     - name: "Start fstests in VM: ${{ matrix.group }}"
       run: |
+        echo $DISKS
         sudo vng --memory 4096 --rw \
         --disk disk1 $DISKS \
         --user root --network user -- \
