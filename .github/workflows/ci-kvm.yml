@@ -73,7 +73,7 @@ jobs:
           qemu-img create -f raw disk$i 12G
           DISKS+=" --disk disk$i"
         done
-        echo $DISKS
+        echo DISKS=$DISKS >> $GITHUB_ENV
         pushd $HOME/xfstests
         sudo useradd --create-home fsgqa
         sudo useradd fsgqa2
