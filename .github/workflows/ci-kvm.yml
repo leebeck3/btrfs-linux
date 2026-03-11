@@ -95,9 +95,8 @@ jobs:
     # - cpus all from host (usually 4)
     - name: "Start fstests in VM: ${{ matrix.group }}"
       run: |
-        ls -latr
-        sudo --preserve-env=DISKS vng --memory 4096 --rw \
-        $DISKS \
+        sudo vng --memory 4096 --rw \
+        --disk disk1 $DISKS \
         --user root --network user -- \
         "cd $HOME/xfstests; lscpu; free -m; cat /proc/partitions; cat local.config; \
          . local.config; \
